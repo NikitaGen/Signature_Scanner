@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Virus{ //структура Б\Д
-char name[100];
-char sign[6];
-char signfile[6];
-int move;
+struct Virus{ //СЃС‚СЂСѓРєС‚СѓСЂР° Р‘\Р”
+    char name[100];
+    char sign[6];
+    char signfile[6];
+    int move;
+    int MZ[2];
+    int MZT[2];
 }vir;
-int CloseFile(FILE *f){ //закрытие файла
+int CloseFile(FILE *f){ //Р·Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
     int resoult;
     resoult=fclose(f);
     if (resoult!=0) return 1;
     return 0;
 }
-int DataRead(void){ //чтение в переменные Б\Д
+int DataRead(void){ //С‡С‚РµРЅРёРµ РІ РїРµСЂРµРјРµРЅРЅС‹Рµ Р‘\Р”
     FILE *f;
     int resoult;
     f=fopen("Database.txt","r");
@@ -27,44 +29,52 @@ int DataRead(void){ //чтение в переменные Б\Д
 
     return 0;
 }
-int SeekZero(FILE *f){ //идём в начало файла
+int SeekZero(FILE *f){ //РёРґС‘Рј РІ РЅР°С‡Р°Р»Рѕ С„Р°Р№Р»Р°
     int resoult;
     resoult=fseek(f,0,SEEK_SET);
     if(resoult!=0) return 1;
     return 0;
 }
-int SeekEnd(FILE *f){ //идём в коенц файла
+int SeekEnd(FILE *f){ //РёРґС‘Рј РІ РєРѕРµРЅС† С„Р°Р№Р»Р°
     int resoult;
     resoult=fseek(f,0,SEEK_END);
     if(resoult!=0) return 1;
     return 0;
 }
-int GoSign(FILE *f){ //идём к сигнатуре
+int GoSign(FILE *f){ //РёРґС‘Рј Рє СЃРёРіРЅР°С‚СѓСЂРµ
     int resoult;
     resoult=fseek(f,vir.move,SEEK_SET);
     if(resoult!=0) return 1;
     return 0;
 }
-
-
+int MZScan(FILE *f){
+    int resoult;
+    vir.MZT[0]='M';
+    vir.MZT[1]='Z';
+    for (int i=0;i<2;i++){
+        resoult=fread(&vir.MZ[i],sizeof(char),1,f);
+        if (resoult!=1) return 1;
+    }
+    return 0;
+}
 
 int main()
 {
     FILE *f;
     char FileName[100];
     int resoult,reslen;
-    int MZ[2];
-    int MZT[2]={'M','Z'};
+    //int MZ[2];
+    //int MZT[2]={'M','Z'};
     int check=0;
 
-    //привествие
+    //РїСЂРёРІРµСЃС‚РІРёРµ
     resoult=printf("---------------------------------------------------\n| You are welcomed by the MALWARE SEARCH PROGRAM! |\n---------------------------------------------------\nTo check the file, enter the full path to it below.\n");
     if(resoult<0){
         printf("Error printf!");
         return 8;
     }
 
-    //открытие базы данных и запись значений
+    //РѕС‚РєСЂС‹С‚РёРµ Р±Р°Р·С‹ РґР°РЅРЅС‹С… Рё Р·Р°РїРёСЃСЊ Р·РЅР°С‡РµРЅРёР№
     resoult=DataRead();
     switch (resoult){
         case 1:
@@ -78,8 +88,8 @@ int main()
             return 3;
     }
 
-    //ввод имени\пути файла для проверки
-    resoult=printf("Enter the path to the file: ");//можно в функцию
+    //РІРІРѕРґ РёРјРµРЅРё\РїСѓС‚Рё С„Р°Р№Р»Р° РґР»СЏ РїСЂРѕРІРµСЂРєРё
+    resoult=printf("Enter the path to the file: ");//РјРѕР¶РЅРѕ РІ С„СѓРЅРєС†РёСЋ
     if(resoult<0){
         printf("Error printf!");
         return 8;
@@ -90,29 +100,30 @@ int main()
         return 9;
     }
 
-    //открытие .ехе файла
+    //РѕС‚РєСЂС‹С‚РёРµ .РµС…Рµ С„Р°Р№Р»Р°
     f=fopen(FileName,"rb");
     if (f==NULL){
-        printf("Error open file!");//можно в функцию
+        printf("Error open file!");//РјРѕР¶РЅРѕ РІ С„СѓРЅРєС†РёСЋ
         return 10;
     }
 
-    //поиск MZ в начале
+    //РїРѕРёСЃРє MZ РІ РЅР°С‡Р°Р»Рµ
+    //РїРµСЂРµС…РѕРґРёРј РІ РЅР°С‡Р°Р»Рѕ С„Р°Р№Р»Р° РЅР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№
     resoult=SeekZero(f);
     if(resoult==1){
         printf("Error moving to the beginning of the file!");
         return 5;
     }
-    for (int i=0;i<2;i++){
-        resoult=fread(&MZ[i],sizeof(char),1,f);
-        if (resoult!=1){
-            printf("Error of fread!");
-            return 11;
-        }
+
+    //РґРѕСЃС‚Р°СЋ MZ РёР· РЅР°С‡Р°Р»Р° С„Р°Р№Р»Р°
+    resoult=MZScan(f);
+    if(resoult==1){
+        printf("Error of fread!");
+        return 11;
     }
 
-    //сравнение MZ
-    if (MZ[0]!=MZT[0]&&MZ[1]!=MZT[1]){
+    //СЃСЂР°РІРЅРµРЅРёРµ MZ
+    if (vir.MZ[0]!=vir.MZT[0]&&vir.MZ[1]!=vir.MZT[1]){
         resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n");
         if(resoult<0){
             printf("Error printf!");
@@ -126,19 +137,19 @@ int main()
         return 0;
     }
 
-    //ищем размер файла
+    //РёС‰РµРј СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
     resoult=SeekEnd(f);
     if(resoult==1){
         printf("Error when moving to the end of the file!");
         return 6;
     }
-    reslen=ftell(f);//узнаем текущее смещение в конце файла
+    reslen=ftell(f);//СѓР·РЅР°РµРј С‚РµРєСѓС‰РµРµ СЃРјРµС‰РµРЅРёРµ РІ РєРѕРЅС†Рµ С„Р°Р№Р»Р°
     if (reslen==-1){
         printf("Error of ftell!");
         return 12;
     }
-    if(reslen<vir.move){ //сравниваем текущее смещение со смещением нашей сигнатуры
-        resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n"); //если размер меньше, то это не наш файл
+    if(reslen<vir.move){ //СЃСЂР°РІРЅРёРІР°РµРј С‚РµРєСѓС‰РµРµ СЃРјРµС‰РµРЅРёРµ СЃРѕ СЃРјРµС‰РµРЅРёРµРј РЅР°С€РµР№ СЃРёРіРЅР°С‚СѓСЂС‹
+        resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n"); //РµСЃР»Рё СЂР°Р·РјРµСЂ РјРµРЅСЊС€Рµ, С‚Рѕ СЌС‚Рѕ РЅРµ РЅР°С€ С„Р°Р№Р»
         if(resoult<0){
             printf("Error printf!");
             return 8;
@@ -151,14 +162,14 @@ int main()
         return 0;
     }
 
-    //идём к началу сигнатуры
+    //РёРґС‘Рј Рє РЅР°С‡Р°Р»Сѓ СЃРёРіРЅР°С‚СѓСЂС‹
     resoult=GoSign(f);
     if(resoult==1){
         printf("Error when moving to the beginning of the signature!");
         return 7;
     }
 
-    //сравниваем сигнатуры
+    //СЃСЂР°РІРЅРёРІР°РµРј СЃРёРіРЅР°С‚СѓСЂС‹
     check=0;
     for(int i=0;i<6;i++){
         resoult=fread(&vir.signfile[i],sizeof(vir.signfile[0]),1,f);
@@ -166,14 +177,14 @@ int main()
             printf("Error of fread!");
             return 13;
         }
-        if (vir.signfile[i]==vir.sign[i]){ //само сравнение сигнатур и счётчик
+        if (vir.signfile[i]==vir.sign[i]){ //СЃР°РјРѕ СЃСЂР°РІРЅРµРЅРёРµ СЃРёРіРЅР°С‚СѓСЂ Рё СЃС‡С‘С‚С‡РёРє
             check+=1;
         }
     }
 
-    //выводы по сигнатуре
+    //РІС‹РІРѕРґС‹ РїРѕ СЃРёРіРЅР°С‚СѓСЂРµ
     if (check==6){
-        resoult=printf("\nThis is a BAD program! \nVirus name: %s \nFile name: %s\n",vir.name,FileName); //если сигнатуры совпали - это ВИРУС
+        resoult=printf("\nThis is a BAD program! \nVirus name: %s \nFile name: %s\n",vir.name,FileName); //РµСЃР»Рё СЃРёРіРЅР°С‚СѓСЂС‹ СЃРѕРІРїР°Р»Рё - СЌС‚Рѕ Р’РР РЈРЎ
         if(resoult<0){
             printf("Error printf!");
             return 8;
@@ -186,7 +197,7 @@ int main()
         return 0;
     }
     else{
-        resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n"); //если сигнатуры не совпали - это /НЕ\ ВИРУС
+        resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n"); //РµСЃР»Рё СЃРёРіРЅР°С‚СѓСЂС‹ РЅРµ СЃРѕРІРїР°Р»Рё - СЌС‚Рѕ /РќР•\ Р’РР РЈРЎ
         if(resoult<0){
             printf("Error printf!");
             return 8;
