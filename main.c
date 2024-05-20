@@ -121,7 +121,7 @@ int main()
     }
 
     //сравнение MZ
-    if (vir.MZ[0]!=vir.MZT[0]&&vir.MZ[1]!=vir.MZT[1]){
+    if (vir.MZ[0]!=vir.MZT[0]||vir.MZ[1]!=vir.MZT[1]){
         resoult=printf("\nThis is a GOOD program! Have a nice day! Bye!\n");
         if(resoult<0){
             printf("Error printf!");
