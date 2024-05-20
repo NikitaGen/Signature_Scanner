@@ -6,8 +6,8 @@ struct Virus{ //структура переменных с данными о в�
     int move;
     char sign[6];
     char signfile[6];
-    int MZ[2];
-    int MZT[2];
+    char MZ[2];
+    char MZT[2];
 }vir;
 int CloseFile(FILE *f){ //закрытие файла
     int resoult;
