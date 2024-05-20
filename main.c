@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Virus{ //структура Б\Д
+struct Virus{ //структура переменных с данными о вирусе
     char name[100];
+    int move;
     char sign[6];
     char signfile[6];
-    int move;
     int MZ[2];
     int MZT[2];
 }vir;
@@ -35,7 +35,7 @@ int SeekZero(FILE *f){ //идём в начало файла
     if(resoult!=0) return 1;
     return 0;
 }
-int SeekEnd(FILE *f){ //идём в коенц файла
+int SeekEnd(FILE *f){ //идём в конец файла
     int resoult;
     resoult=fseek(f,0,SEEK_END);
     if(resoult!=0) return 1;
@@ -63,8 +63,6 @@ int main()
     FILE *f;
     char FileName[100];
     int resoult,reslen;
-    //int MZ[2];
-    //int MZT[2]={'M','Z'};
     int check=0;
 
     //привествие
